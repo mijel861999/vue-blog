@@ -3,9 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/Login.vue'
 import BlogView from '../views/Blog.vue'
 
+import VueCookies from 'vue-cookies'
+
 const routes = [
-  { path: '/login', component: LoginView },
-  { path: '/', component: BlogView, meta: { requiresAuth: true } }
+  { path: '/login', name:'login', component: LoginView},
+  { path: '/', name: 'Inicio', component: BlogView, meta: { requiresAuth: true } }
 ]
 
 export const router = createRouter({
@@ -14,18 +16,26 @@ export const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+    console.log(to.fullPath)
+    console.log(from)
+
   if (to.meta.requiresAuth && !isAuthenticated()) {
-    // si la ruta requiere autenticación y el usuario no está autenticado
-    // redirigir a la página de inicio de sesión
     next('/login')
   } else {
-    // en cualquier otro caso, permitir el acceso a la ruta
+    if (isAuthenticated() && to.fullPath === '/login') {
+      next('/')
+    }
     next()
   }
 })
 
 function isAuthenticated() {
   // REALIZAR AUTENTICACIÓN
+  const session = VueCookies.get('token-session')
+  if(session) {
+    return true
+  } 
+
   return false
 }
 
